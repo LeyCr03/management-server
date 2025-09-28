@@ -20,7 +20,7 @@ const user_service_1 = require("../service/user.service");
 const typeorm_2 = require("typeorm");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
-const env_1 = require("../config/env");
+const env_1 = require("../env");
 let AuthService = class AuthService {
     userRepository;
     userService;
@@ -37,8 +37,7 @@ let AuthService = class AuthService {
         return {
             id: savedUser.id,
             email: savedUser.email,
-            profileImage: savedUser.profileImage,
-            description: savedUser.description,
+            image: savedUser.image,
             name: savedUser.name,
         };
     }
@@ -72,8 +71,8 @@ let AuthService = class AuthService {
         };
     }
     async refreshTokens(req) {
-        const { user_id, refreshToken: currentRefreshToken } = req.user;
-        const user = await this.userService.getUserWithRefreshTokenHash(user_id);
+        const { _id, refreshToken: currentRefreshToken } = req.user;
+        const user = await this.userService.getUserWithRefreshTokenHash(_id);
         if (!user || !user.refreshTokenHash) {
             throw new common_1.UnauthorizedException('Refresh token is invalid or user not found');
         }
@@ -91,7 +90,7 @@ let AuthService = class AuthService {
             expiresIn: '7d',
         });
         const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
-        await this.userService.updateRefreshTokenHash(user_id, newRefreshTokenHash);
+        await this.userService.updateRefreshTokenHash(_id, newRefreshTokenHash);
         return {
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,

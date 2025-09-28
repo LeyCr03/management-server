@@ -1,24 +1,22 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Account } from "src/entity/account.entity";
-import { CreateAccountDto, UpdateAccountDto } from "src/dto/account.dto";
-import { Entry } from "src/entity/entry.entity";
-import { Payment } from "src/entity/payment.entity";
+import { CreateAccountDto } from "src/dto/account.dto";
 import { AgeRange, Sex, Status } from "src/types";
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AccountService {
+    private readonly logger;
     constructor(
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
-        @InjectRepository(Entry)
-        private entryRepository: Repository<Entry>,
+    ) { 
+        this.logger = new Logger("Account")
+    }
 
-        @InjectRepository(Payment)
-        private paymentRepository: Repository<Payment>,
-    ) { }
-
+    //create account
     async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
         const account = await this.accountRepository.create(createAccountDto);
         const savedAccount = await this.accountRepository.save(account);
@@ -26,13 +24,15 @@ export class AccountService {
         return savedAccount;
     }
 
+    //find by id
     async findById(id: string): Promise<Account | null> { // Find Account by id
         return this.accountRepository.findOne({ where: { id } });
     }
+    //find by name
     async findByName(name: string): Promise<Account | null> { // Find Account by email
         return this.accountRepository.findOne({ where: { name } });
     }
-
+    //delete account
     async deleteAccount(id: string): Promise<{ message: string }> { //delete function
         const account = await this.accountRepository.findOne({ where: { id } });
 
@@ -44,17 +44,18 @@ export class AccountService {
         return { message: ' Account deleted Succsessfully' };
     }
 
-    async updateAccount(id: string, updateAccountDto: UpdateAccountDto): Promise<{ message: string }> { //update function
+
+    //update account status
+    async updateAccount(id: string, status: Status): Promise<{ message: string }> { 
         const account = await this.findById(id);
         if (!account) {
             throw new NotFoundException('Account with ID ${id} not found.');
         }
-        await this.accountRepository.update(id, updateAccountDto);
+        await this.accountRepository.update(id, {status});
         return { message: ' Account Updated' };
     }
 
-    //filter account by sex, agerange, frequecy and status  !pagination
-
+    //filter account by sex, agerange, frequecy and status with pagination
     async getFilteredAccounts(
         sex?: Sex,
         ageRange?: AgeRange,
@@ -77,15 +78,15 @@ export class AccountService {
 
         const [accounts, total] = await this.accountRepository.findAndCount({
             where,
-            skip: (page - 1) * limit, 
-            take: limit,  
+            skip: (page - 1) * limit,
+            take: limit,
         });
 
         return { accounts, total };
     }
 
 
-    //get frequency and suspension status
+    //get frequency , suspension status and days since last payment
 
     async getAccountFrequencyAndSuspensionStatus(accountId: string): Promise<{
         frequency: number;
@@ -94,24 +95,20 @@ export class AccountService {
     }> {
         const account = await this.accountRepository.findOne({
             where: { id: accountId },
-            relations: ['payments', 'entries'], // Load the related payments and entries
+            relations: ['payments', 'entries'],
         });
 
         if (!account) {
             throw new Error('Account not found');
         }
 
-        //1. Get last payment
         const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0]; // Sort by registered_at (descending)
 
-        //2. Calculate the frecuency
         const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0))); // Filter the array of entries
 
-        //3. Calculate the days since the last payment
         const currentDate = new Date();
         const daysSinceLastPayment = lastPayment ? Math.floor((currentDate.getTime() - lastPayment.registered_at.getTime()) / (1000 * 3600 * 24)) : null;
 
-        //4. Calculate the flag for suspension risk
         const suspensionThresholdDays = 30;
         const suspensionRisk = daysSinceLastPayment === null || daysSinceLastPayment > suspensionThresholdDays;
 
@@ -125,8 +122,8 @@ export class AccountService {
     //get revenue
     async calculateAccountRevenue(
         accountId: string,
-        pricePerEntry: number, 
-        subscriptionPrice: number 
+        pricePerEntry: number,
+        subscriptionPrice: number
     ): Promise<number> {
         const account = await this.accountRepository.findOne({
             where: { id: accountId },
@@ -137,33 +134,27 @@ export class AccountService {
             throw new Error('Account not found');
         }
 
-        //1. Sort last payment
-        const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0]; // Sort by registered_at (descending)
+        const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0]; 
 
-        //2. Calculate the frecquency
-        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0))); // Filter the array of entries
+        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0))); 
 
-        //3. Calculate estimated revenue
         const revenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
 
         return revenue;
     }
 
-    async calculateTotalEstimatedRevenue(
+    async calculateTotalRevenue(
         pricePerEntry: number,
         subscriptionPrice: number,
     ): Promise<number> {
-        // 1. Get all Accounts
         const accounts = await this.accountRepository.find({ relations: ['payments', 'entries'] });
 
-        // 2. Calculate revenue for each account and sum it up
         let totalRevenue = 0;
         for (const account of accounts) {
-            //1. Sort last payments
-            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0]; // Sort by registered_at (descending)
+            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0]; 
 
             //2. Calculate the frecquency after last payment
-            const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0))); // Filter the array of entries
+            const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0))); 
 
             // Calculate estimated revenue for the single account
             const accountRevenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
@@ -171,5 +162,48 @@ export class AccountService {
         }
 
         return totalRevenue;
+    }
+
+    //!automathic suspension
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT) // Runs every day at midnight
+    async suspendAccounts(): Promise<void> {
+        this.logger.log('Starting daily account suspension check...');
+        const accounts = await this.accountRepository.find({
+            where: { status: Status.ACTIVE },
+            relations: ['payments'],
+        });
+
+        for (const account of accounts) {
+            try {
+                //1. Sort the payments to retrieve the last payment of account
+                const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
+
+                if (!lastPayment) {
+                    // No payments found, suspend immediately.
+                    account.status = Status.SUSPENDED;
+                    await this.accountRepository.save(account);
+                    this.logger.log(`Account ${account.id} suspended due to no payments.`);
+                    continue; // Move to the next account
+                }
+                //2. Get currentDate
+                const currentDate = new Date();
+
+                // 3. Calculate the suspendedDate
+                const suspendDate = new Date(lastPayment.registered_at);
+                suspendDate.setMonth(suspendDate.getMonth() + 1); // Add one month
+                suspendDate.setDate(suspendDate.getDate() + 1);    // Add one day
+
+                //If Currentdate is greather than the suspend Date suspends the account
+                if (currentDate > suspendDate) {
+                    account.status = Status.SUSPENDED;
+                    await this.accountRepository.save(account);
+                    this.logger.log(`Account ${account.id} suspended due to overdue payment.`);
+                }
+            } catch (error) {
+                this.logger.error(`Failed to process account ${account.id}: ${error.message}`, error.stack);
+            }
+        }
+
+        this.logger.log('Account suspension check complete.');
     }
 }

@@ -1,8 +1,9 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Account } from "src/entity/account.entity";
 import { Payment } from "src/entity/payment.entity";
+import { Status } from "src/types";
 
 @Injectable()
 export class PaymentService {
@@ -13,17 +14,19 @@ export class PaymentService {
     private readonly paymentRepository: Repository<Payment>,
   ) { }
 
-  async createPayment(accountId: string, registered_at: Date): Promise<Payment>{
+  //create payment and update account status to active
+  async createPayment(accountId: string, registered_at: Date): Promise<Payment> {
     const account = await this.accountRepository.findOne({ where: { id: accountId } })
-        if (!account) {
-            throw new NotFoundException('Account not found')
-        }
+    if (!account) {
+      throw new NotFoundException('Account not found')
+    }
     const payment = await this.paymentRepository.create({
-        accountId,
-        account,
-        registered_at
+      accountId,
+      account,
+      registered_at
     });
     const savedpayment = await this.paymentRepository.save(payment);
+    await this.accountRepository.update(accountId, { status: Status.ACTIVE })
 
     return savedpayment;
   }
@@ -44,5 +47,31 @@ export class PaymentService {
 
     await this.paymentRepository.remove(payment);
     return { message: ' Account deleted Succsessfully' };
+  }
+
+  //get all payments dne by an account
+  async getAllAccountsPayments(accountId: string): Promise<Payment[]> {
+    const account = await this.accountRepository.findOne({ where: { id: accountId } })
+    if (!account) {
+      throw new NotFoundException('Account not found')
+    }
+
+    return this.paymentRepository.find({ where: { accountId } });
+  }
+
+  //get all payments done during the last month
+  async getAllMonthlyPayments():Promise<Payment[]> {
+    const currentDate = new Date();
+    const lastMonthDate = new Date(currentDate);
+    lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+
+   
+    const payments = await this.paymentRepository.find({
+      where: {
+        registered_at: Between(currentDate, lastMonthDate),
+      },
+    });
+
+    return payments;
   }
 }

@@ -17,7 +17,6 @@ class CreateUserDto {
     password;
     profileImage;
     email;
-    description;
 }
 exports.CreateUserDto = CreateUserDto;
 __decorate([
@@ -54,21 +53,11 @@ __decorate([
     (0, class_validator_1.IsEmail)({}, { message: 'Email must be a valid email address' }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "email", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Bio/Description',
-        example: 'Looking for a better choice',
-    }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "description", void 0);
 class UpdateUserDto {
     name;
     password;
     profileImage;
     email;
-    description;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
@@ -109,21 +98,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "email", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Bio/Description',
-        example: 'Looking for a better choice',
-    }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateUserDto.prototype, "description", void 0);
 class CreateUserResponse {
     id;
     name;
     email;
     profileImage;
-    description;
 }
 exports.CreateUserResponse = CreateUserResponse;
 __decorate([
@@ -144,10 +123,4 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateUserResponse.prototype, "profileImage", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        example: 'Looking for a better choice',
-    }),
-    __metadata("design:type", String)
-], CreateUserResponse.prototype, "description", void 0);
 //# sourceMappingURL=user.dto.js.map

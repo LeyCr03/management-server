@@ -3,7 +3,7 @@ import { UserService } from "src/service/user.service";
 import { Repository } from "typeorm";
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from "src/dto/user.dto";
-import { DecodedRequest, UserId, UserResponse } from "src/types";
+import { DecodedRequest, UserResponse } from "src/types";
 import { LoginDto } from "./auth.dto";
 export declare class AuthService {
     private readonly userRepository;
@@ -22,5 +22,5 @@ export declare class AuthService {
         accessToken: string;
         refreshToken: string;
     }>;
-    logout(user_id: UserId): Promise<void>;
+    logout(user_id: string): Promise<void>;
 }

@@ -1,9 +1,8 @@
-import { Controller, Get, Query, UseGuards, Request, Delete, Put, Body } from '@nestjs/common';
+import { Controller, UseGuards, Request, Delete, Put, Body } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { DecodedRequest, UserResponse } from 'src/types';
-import { User } from 'src/entity/user.entity';
+import { DecodedRequest } from 'src/types';
 import { UpdateUserDto } from 'src/dto/user.dto';
 
 @ApiTags('Users')

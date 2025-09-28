@@ -14,17 +14,12 @@ const user_module_1 = require("../module/user.module");
 const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
-const env_1 = require("../config/env");
+const env_1 = require("../env");
 const user_service_1 = require("../service/user.service");
 const user_entity_1 = require("../entity/user.entity");
 const typeorm_1 = require("@nestjs/typeorm");
-const poll_entity_1 = require("../entity/poll.entity");
 const local_startegy_1 = require("./strategies/local.startegy");
 const jwt_refresh_startegy_1 = require("./strategies/jwt-refresh.startegy");
-const sub_module_1 = require("../module/sub.module");
-const sub_entity_1 = require("../entity/sub.entity");
-const vote_module_1 = require("../module/vote.module");
-const vote_entity_1 = require("../entity/vote.entity");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -32,10 +27,8 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             user_module_1.UserModule,
-            sub_module_1.SubModule,
             passport_1.PassportModule,
-            vote_module_1.VoteModule,
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, vote_entity_1.Vote, poll_entity_1.Poll, sub_entity_1.Sub]),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User,]),
             jwt_1.JwtModule.registerAsync({
                 useFactory: async () => ({
                     secret: env_1.env.JWT_SECRET,

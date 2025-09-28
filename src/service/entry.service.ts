@@ -1,5 +1,5 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Account } from "src/entity/account.entity";
 import { Entry } from "src/entity/entry.entity";
@@ -48,4 +48,27 @@ export class EntryService {
         return { message: 'Entry deleted Succsessfully' };
     }
 
+    async getAllAccountsEntries(accountId: string): Promise<Entry[]> {
+        const account = await this.accountRepository.findOne({ where: { id: accountId } })
+        if (!account) {
+          throw new NotFoundException('Account not found')
+        }
+    
+        return this.entryRepository.find({ where: { accountId } });
+      }
+
+    // Find all entries since last month
+    async getAllMonthlyEntries(): Promise<Entry[]> {
+        const currentDate = new Date();
+        const lastMonthDate = new Date(currentDate);
+        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+
+        const entries = await this.entryRepository.find({
+          where: {
+            registered_at: Between(currentDate, lastMonthDate),
+          },
+        });
+    
+        return entries;
+      }
 }

@@ -1,56 +1,41 @@
 export interface DecodedRequest {
     user: {
-        user_id: string;
+        _id: string;
         email: string;
         password: string;
         refreshToken: string;
     };
 }
-export type UserId = string;
-export interface PollResponse {
-    pollId: string;
-    userId: string;
-    userImage: string | null;
-    username: string;
-    header: string;
-    description: string | null;
-    created_at: Date;
-    image: string | null;
-    choices: string[];
-    expiration: Date | null;
-    topic: string;
-    isArchived: boolean;
-    comments: number;
-    subs: number;
+export declare enum Sex {
+    MALE = "male",
+    FEMALE = "female"
 }
-export interface UserPollsResponse {
-    pollId: string;
-    userId: string;
-    header: string;
-    description: string | null;
-    created_at: Date;
-    image: string | null;
-    choices: string[];
-    expiration: Date | null;
-    isArchived: boolean;
-    topic: string;
-    comments: number;
-    subs: number;
+export declare enum Status {
+    ACTIVE = "active",
+    SUSPENDED = "suspended"
 }
+export type AgeRange = '18-25' | '25-35' | '35-45' | '45-70';
 export type UserResponse = {
     id: string;
     email: string;
-    profileImage?: string | null;
-    description: string;
+    image?: string | null;
     name: string;
 };
-export interface GetPollMetricsResponse {
-    pollId: string;
-    total: number;
-    userVote: number | null;
-    useSubscribed: boolean;
-    options: {
-        value: string;
-        ammount: number;
-    }[];
-}
+export type UserTokenResponse = {
+    id: string;
+    email: string;
+    image?: string | null;
+    name: string;
+    refreshTokenHash: string | null;
+};
+export type AccountResponse = {
+    id: string;
+    name: string;
+    birth: Date;
+    age: number;
+    sex: Sex;
+    registered_at: Date;
+    status: Status;
+    last_payment: Date;
+    frequency: Date[];
+};

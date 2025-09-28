@@ -9,22 +9,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const env_1 = require("./config/env");
+const env_1 = require("./env");
 const user_entity_1 = require("./entity/user.entity");
-const poll_entity_1 = require("./entity/poll.entity");
-const sub_entity_1 = require("./entity/sub.entity");
-const topic_entity_1 = require("./entity/topic.entity");
-const comment_entity_1 = require("./entity/comment.entity");
 const user_module_1 = require("./module/user.module");
 const auth_module_1 = require("./auth/auth.module");
-const comment_module_1 = require("./module/comment.module");
-const poll_module_1 = require("./module/poll.module");
-const topic_module_1 = require("./module/topic.module");
-const sub_module_1 = require("./module/sub.module");
-const vote_entity_1 = require("./entity/vote.entity");
-const vote_module_1 = require("./module/vote.module");
-const choices_entity_1 = require("./entity/choices.entity");
-const choices_module_1 = require("./module/choices.module");
+const account_entity_1 = require("./entity/account.entity");
+const payment_entity_1 = require("./entity/payment.entity");
+const entry_entity_1 = require("./entity/entry.entity");
+const payment_module_1 = require("./module/payment.module");
+const entry_module_1 = require("./module/entry.module");
+const account_module_1 = require("./module/account.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -45,15 +39,12 @@ exports.AppModule = AppModule = __decorate([
                     entities: [__dirname + '/entity/*.entity{.ts,.js}'],
                 })
             }),
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, poll_entity_1.Poll, topic_entity_1.Topic, sub_entity_1.Sub, vote_entity_1.Vote, choices_entity_1.Choice, comment_entity_1.Comment]),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, account_entity_1.Account, payment_entity_1.Payment, entry_entity_1.Entry]),
             auth_module_1.AuthModule,
             user_module_1.UserModule,
-            choices_module_1.ChoiceModule,
-            comment_module_1.CommentModule,
-            poll_module_1.PollModule,
-            topic_module_1.TopicModule,
-            sub_module_1.SubModule,
-            vote_module_1.VoteModule
+            payment_module_1.PaymentModule,
+            entry_module_1.EntryModule,
+            account_module_1.AccountModule
         ],
         controllers: [],
         providers: [],

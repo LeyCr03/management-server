@@ -13,8 +13,8 @@ export const env = envsafe({
     devDefault: 'development',
   }),
   DB_PORT: port({
-    default: 5433, 
-    devDefault: 5433,
+    default: 5432, 
+    devDefault: 5434,
   }),
   DB_USER: str({
     default: 'root', 
@@ -29,7 +29,7 @@ export const env = envsafe({
     devDefault: 'localhost',
   }),
   DB_NAME: str({
-    default: 'poll-my-choice', 
-    devDefault: 'poll-my-choice',
+    default: 'subscription-manager', 
+    devDefault: 'subscription-manager',
   }),
 });

@@ -1,5 +1,5 @@
-import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { Sex, Status } from "src/types";
+import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Sex } from "src/types";
 
 export class CreateAccountDto {
 
@@ -22,17 +22,5 @@ export class CreateAccountDto {
     @IsNotEmpty()
     @IsDate()
     registered_at: Date
-
-}
-
-export class UpdateAccountDto {
-
-    @IsString()
-    @IsOptional()
-    name?: string;
-
-    @IsEnum(Status)
-    @IsOptional()
-    status: Status
 
 }

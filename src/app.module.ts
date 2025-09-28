@@ -4,6 +4,12 @@ import { env } from './env';
 import { User } from './entity/user.entity';
 import { UserModule } from './module/user.module';
 import { AuthModule } from './auth/auth.module';
+import { Account } from './entity/account.entity';
+import { Payment } from './entity/payment.entity';
+import { Entry } from './entity/entry.entity';
+import { PaymentModule } from './module/payment.module';
+import { EntryModule } from './module/entry.module';
+import { AccountModule } from './module/account.module';
 
 @Module({
   imports: [
@@ -22,9 +28,12 @@ import { AuthModule } from './auth/auth.module';
       })
     },
     ),
-    TypeOrmModule.forFeature([User,]),
+    TypeOrmModule.forFeature([User, Account, Payment, Entry]),
     AuthModule,
     UserModule,
+    PaymentModule,
+    EntryModule,
+    AccountModule
   ],
   controllers: [],
   providers: [],

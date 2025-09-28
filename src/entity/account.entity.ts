@@ -14,26 +14,23 @@ export class Account {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @CreateDateColumn({ type: 'timestamp' })
-    birth: Date
+    @Column({ type: 'date' }) // Use 'date' type for birthdates, not timestamp
+    birth: Date;
 
     @CreateDateColumn({ type: 'timestamp' })
-    registered_at: Date
+    registered_at: Date;
 
-    @Column({ type: 'number' })
-    age: number
+    @Column({ type: 'int' }) // Use 'int' type for age
+    age: number;
 
-    @Column({ type: 'varchar' })
-    name: string
+    @Column({ type: 'varchar', length: 255 }) // Specify length for varchar
+    name: string;
 
-    @Column({ type: 'enum' })
-    sex: Sex
+    @Column({ type: 'enum', enum: Sex }) // Specify the enum type
+    sex: Sex;
 
-    @Column({ type: 'enum' })
-    status: Status
-
-    @Column({ type: 'text', nullable: true })
-    refreshTokenHash?: string | null;
+    @Column({ type: 'enum', enum: Status }) // Specify the enum type
+    status: Status;
 
     @OneToMany(() => Payment, (payment) => payment.account)
     payments: Payment[];

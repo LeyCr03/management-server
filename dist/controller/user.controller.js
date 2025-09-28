@@ -23,67 +23,14 @@ let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
     }
-    async getUserSubs(req) {
-        return this.userService.getUserSubs(req.user.user_id);
-    }
-    async getUserPolls(req) {
-        return this.userService.getUserPolls(req.user.user_id);
-    }
-    async findById(req) {
-        return this.userService.getUserById(req.user.user_id);
-    }
-    async findbyEmail(req) {
-        return this.userService.getUserByEmail(req.user.email);
-    }
-    async getSubscribers() { }
     async delete(req) {
-        return this.userService.deleteUser(req.user.user_id);
+        return this.userService.deleteUser(req.user._id);
     }
     async update(req, updateUserDto) {
-        return this.userService.updateUser(req.user.user_id, updateUserDto);
+        return this.userService.updateUser(req.user._id, updateUserDto);
     }
 };
 exports.UserController = UserController;
-__decorate([
-    (0, common_1.Get)('subs'),
-    (0, swagger_1.ApiOperation)({ summary: "Get user's subscriptions" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Subscriptions.' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found.' }),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "getUserSubs", null);
-__decorate([
-    (0, common_1.Get)('polls'),
-    (0, swagger_1.ApiOperation)({ summary: "Get user's polls" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Polls' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Polls Not found.' }),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "getUserPolls", null);
-__decorate([
-    (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: "Get user by ID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User found succsesssfully' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'User Not found.' }),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "findById", null);
-__decorate([
-    (0, common_1.Get)('email'),
-    (0, swagger_1.ApiOperation)({ summary: "Get user by Email" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User found succsesssfully' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'User Not found.' }),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "findbyEmail", null);
 __decorate([
     (0, common_1.Delete)(),
     (0, swagger_1.ApiOperation)({ summary: "Delete user by ID" }),
@@ -96,8 +43,8 @@ __decorate([
 ], UserController.prototype, "delete", null);
 __decorate([
     (0, common_1.Put)(),
-    (0, swagger_1.ApiOperation)({ summary: "Delete user by ID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User deleted succsesssfully' }),
+    (0, swagger_1.ApiOperation)({ summary: "Updated user by ID" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User Updated succsesssfully' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User Not found.' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
