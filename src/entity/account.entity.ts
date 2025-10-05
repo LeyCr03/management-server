@@ -29,7 +29,7 @@ export class Account {
     @Column({ type: 'enum', enum: Sex }) // Specify the enum type
     sex: Sex;
 
-    @Column({ type: 'enum', enum: Status }) // Specify the enum type
+    @Column({ type: 'enum', enum: Status, default: Status.SUSPENDED}) // Specify the enum type
     status: Status;
 
     @OneToMany(() => Payment, (payment) => payment.account)

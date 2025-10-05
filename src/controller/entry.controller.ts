@@ -1,4 +1,4 @@
-import { Controller, Delete, Put, Body, Get, Param } from "@nestjs/common"
+import { Controller, Delete, Put, Body, Get, Param, Post } from "@nestjs/common"
 import { EntryService } from "src/service/entry.service";
 
 @Controller('api/entries')
@@ -10,26 +10,14 @@ export class EntriesController {
         return this.entryService.deleteEntry(id);
     }
 
-    @Put(':id') 
-    async create(@Param('id') id: string, @Body() registered_at: Date ) {
-        return this.entryService.createEntry(id, registered_at);
+    @Post(':id') 
+    async create(@Param('id') id: string ) {
+        return this.entryService.createEntry(id);
     }
 
-
-    @Get(':id') 
-    async getEntryById(@Param('id') id: string) {
-        return this.entryService.findById(id);
-    }
-
-    @Get('by-date')
-    async getEntriesByDate(@Body() date: Date) {
-        return this.entryService.findAllByDate(date);
-    }
-
-
-    @Get('account-entries/:id') 
-    async getAccountEntries(@Param('id') id: string) {
-        return this.entryService.getAllAccountsEntries(id);
+    @Get('entries') 
+    async getEntries() {
+        return this.entryService.getAllEntriesSinceLastMonths();
     }
 
     @Get('monthly-entries') 

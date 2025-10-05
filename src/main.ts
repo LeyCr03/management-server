@@ -7,14 +7,14 @@ async function bootstrap() {
 
 
   const config = new DocumentBuilder()
-    .setTitle('Poll My Choice API')
-    .setDescription('Poll My Choice Backend')
+    .setTitle('Subscription Manager API')
+    .setDescription('Subscription Manager Backend')
     .setVersion('0.1')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();

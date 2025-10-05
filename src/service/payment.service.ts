@@ -34,9 +34,6 @@ export class PaymentService {
   async findById(id: string): Promise<Payment | null> { // Find Payment by id
     return this.paymentRepository.findOne({ where: { id } });
   }
-  async findAllByDate(date: Date): Promise<Payment[] | null> { // Find Payments by date
-    return this.paymentRepository.find({ where: { registered_at: date } });
-  }
 
   async deletePayment(id: string): Promise<{ message: string }> { //delete function
     const payment = await this.paymentRepository.findOne({ where: { id } });
@@ -49,24 +46,15 @@ export class PaymentService {
     return { message: ' Account deleted Succsessfully' };
   }
 
-  //get all payments dne by an account
-  async getAllAccountsPayments(accountId: string): Promise<Payment[]> {
-    const account = await this.accountRepository.findOne({ where: { id: accountId } })
-    if (!account) {
-      throw new NotFoundException('Account not found')
-    }
-
-    return this.paymentRepository.find({ where: { accountId } });
-  }
 
   //get all payments done during the last month
-  async getAllMonthlyPayments():Promise<Payment[]> {
+  async getMonthlyPayments():Promise<number> {
     const currentDate = new Date();
     const lastMonthDate = new Date(currentDate);
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
    
-    const payments = await this.paymentRepository.find({
+    const payments = await this.paymentRepository.count({
       where: {
         registered_at: Between(currentDate, lastMonthDate),
       },
@@ -74,4 +62,37 @@ export class PaymentService {
 
     return payments;
   }
+
+  async getAllMonthlyPaymentsByDate(): Promise<{ date: Date; payments: number }[]> {
+        const currentDate = new Date();
+        const lastMonthDate = new Date(currentDate);
+        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+
+        const allpayments = await this.paymentRepository.find({
+            where: {
+                registered_at: Between(lastMonthDate, currentDate),
+            },
+            order: {
+                registered_at: 'ASC',
+            },
+        });
+        const groupedpayments: { [dateString: string]: { date: Date; payments: number } } = {};
+
+        for (const entry of allpayments) {
+            const date = new Date(entry.registered_at.toDateString());
+            const dateString = date.toISOString().slice(0, 10);
+
+            if (groupedpayments[dateString]) {
+                groupedpayments[dateString].payments++;
+            } else {
+                groupedpayments[dateString] = {
+                    date: date,
+                    payments: 1,
+                };
+            }
+        }
+
+        // Convert the object to an array
+        return Object.values(groupedpayments);
+    }
 }

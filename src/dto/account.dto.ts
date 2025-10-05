@@ -19,8 +19,4 @@ export class CreateAccountDto {
     @IsEnum(Sex, { message: 'sex must be either "male" or "female"' })
     sex: Sex
 
-    @IsNotEmpty()
-    @IsDate()
-    registered_at: Date
-
 }
