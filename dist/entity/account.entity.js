@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", String)
 ], Account.prototype, "sex", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: types_1.Status }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: types_1.Status, default: types_1.Status.SUSPENDED }),
     __metadata("design:type", String)
 ], Account.prototype, "status", void 0);
 __decorate([

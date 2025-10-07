@@ -17,7 +17,6 @@ class CreateAccountDto {
     birth;
     age;
     sex;
-    registered_at;
 }
 exports.CreateAccountDto = CreateAccountDto;
 __decorate([
@@ -40,9 +39,4 @@ __decorate([
     (0, class_validator_1.IsEnum)(types_1.Sex, { message: 'sex must be either "male" or "female"' }),
     __metadata("design:type", String)
 ], CreateAccountDto.prototype, "sex", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsDate)(),
-    __metadata("design:type", Date)
-], CreateAccountDto.prototype, "registered_at", void 0);
 //# sourceMappingURL=account.dto.js.map

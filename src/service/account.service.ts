@@ -19,7 +19,9 @@ export class AccountService {
 
     //create account
     async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
+        console.log({ createAccountDto })
         const account = await this.accountRepository.create(createAccountDto);
+        console.log({ account })
         const savedAccount = await this.accountRepository.save(account);
 
         return savedAccount;
@@ -47,12 +49,12 @@ export class AccountService {
 
 
     //update account status
-    async updateAccount(id: string, status?: Status, name?: string): Promise<{ message: string }> {
+    async updateAccount(id: string, name?: string): Promise<{ message: string }> {
         const account = await this.findById(id);
         if (!account) {
             throw new NotFoundException('Account with ID ${id} not found.');
         }
-        await this.accountRepository.update(id, { status, name });
+        await this.accountRepository.update(id, { name });
         return { message: ' Account Updated' };
     }
 
@@ -122,12 +124,30 @@ export class AccountService {
         return { accounts, total };
     }
 
-
-    //!find all accounts paginated
-    async getAllAccountsByLastPayment(
+   async getAllAccountsByRegistration(
         page: number = 1,
         limit: number = 10
     ): Promise<{ accounts: Account[]; total: number }> {
+
+        const skip = (page - 1) * limit;
+
+        const [accounts, total] = await this.accountRepository.findAndCount({
+            order: {
+                registered_at: 'DESC', // Order by most recent registration
+            },
+            skip: skip,
+            take: limit,
+        });
+
+        return { accounts, total };
+    }
+
+    //!find all accounts paginated
+    async getAllAccountsByLastPayment(
+    ): Promise<{ accounts: Account[]; total: number }> {
+        const page = 1;
+        const limit = 10;
+        
 
         const skip = (page - 1) * limit;
 

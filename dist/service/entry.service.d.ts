@@ -5,12 +5,14 @@ export declare class EntryService {
     private readonly entryRepository;
     private readonly accountRepository;
     constructor(entryRepository: Repository<Entry>, accountRepository: Repository<Account>);
-    createEntry(accountId: string, registered_at: Date): Promise<Entry>;
+    createEntry(accountId: string): Promise<Entry>;
     findById(id: string): Promise<Entry | null>;
-    findAllByDate(date: Date): Promise<Entry[]>;
     deleteEntry(id: string): Promise<{
         message: string;
     }>;
-    getAllAccountsEntries(accountId: string): Promise<Entry[]>;
-    getAllMonthlyEntries(): Promise<Entry[]>;
+    getAllMonthlyEntries(): Promise<{
+        date: Date;
+        entries: number;
+    }[]>;
+    getAllEntriesSinceLastMonths(): Promise<number>;
 }

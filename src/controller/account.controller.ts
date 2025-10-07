@@ -16,14 +16,14 @@ export class AccountController {
     @Put(':id')
     async update(
         @Param('id') id: string,
-        @Body() status: Status
+        @Body() name: string
     ): Promise<{ message: string }> {
-        return this.accountService.updateAccount(id, status);
+        return this.accountService.updateAccount(id, name);
     }
 
     @Post()
     async create(@Body() createAccountDto: CreateAccountDto) {
-        return this.accountService.createAccount(createAccountDto);
+        return await this.accountService.createAccount(createAccountDto);
     }
 
     @Get(':id')
@@ -45,33 +45,41 @@ export class AccountController {
         return this.accountService.calculateAccountRevenue(id, pricePerEntry, subscriptionPrice);
     }
 
-    @Get('last-payment/:id')
+    @Get('last/payment/:id')
     async getAccountLastPayment(
         @Param('id') id: string,
     ) {
         return this.accountService.getLastPayment(id);
     }
 
-    @Get('last-entry/:id')
+    @Get('last/entry/:id')
     async getAccountLastEntry(
         @Param('id') id: string,
     ) {
         return this.accountService.getLastEntry(id);
     }
 
-    @Get('entries-after-last-payment/:id')
+    @Get('entries/afterLastPayment/:id')
     async getAccountEntiesAfterLastPayment(
         @Param('id') id: string,
     ) {
         return this.accountService.getEntriesAfterLastPayment(id);
     }
 
-    @Get('accounts')
+    @Get('by/last/payment')
     async getAllAccounts( ) {
         return this.accountService.getAllAccountsByLastPayment();
     }
+
+    @Get('by/registration')
+    async getAllAccountsByRegistration(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,  // Use DefaultValuePipe and ParseIntPipe
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
+     ) {
+        return this.accountService.getAllAccountsByRegistration(page, limit);
+    }
     
-    @Get('by-filter')
+    @Get('by/filter')
     async getFilteredAccounts(
         @Query('search') search?: string,
         @Query('status') status?: Status
@@ -92,13 +100,13 @@ export class AccountController {
         return this.accountService.getAccountFrequency(id);
     }
 
-     @Get('suspension-status/:id')
+     @Get('suspension/status/:id')
     async getSuspension(@Param('id') id: string) {
         return this.accountService.getSuspensionStatus(id);
     }
 
 
-    @Get('suspension-report')
+    @Get('suspension/report')
     async getRiskReport( ) {
         return this.accountService.reportSuspensionRisks();
     }
@@ -113,17 +121,17 @@ export class AccountController {
         return this.accountService.getAgeMetrics();
     }
 
-    @Get('month-new-customers')
+    @Get('month/new/customers')
     async getMonthNewCustomers( ) {
         return this.accountService.getAllMonthNewCustomers();
     }
 
-    @Get('new-customers')
+    @Get('new/customers')
     async getNewCustomers( ) {
         return this.accountService.getAllNewCustomers();
     }
 
-    @Get('active-accounts')
+    @Get('active/accounts')
     async getActiveAccounts( ) {
         return this.accountService.getAllActiveAccounts();
     }

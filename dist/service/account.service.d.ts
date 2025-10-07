@@ -1,7 +1,8 @@
 import { Repository } from "typeorm";
 import { Account } from "src/entity/account.entity";
 import { CreateAccountDto } from "src/dto/account.dto";
-import { AgeRange, Sex, Status } from "src/types";
+import { Status } from "src/types";
+import { Entry } from "src/entity/entry.entity";
 export declare class AccountService {
     private readonly accountRepository;
     private readonly logger;
@@ -12,19 +13,51 @@ export declare class AccountService {
     deleteAccount(id: string): Promise<{
         message: string;
     }>;
-    updateAccount(id: string, status: Status): Promise<{
+    updateAccount(id: string, name?: string): Promise<{
         message: string;
     }>;
-    getFilteredAccounts(sex?: Sex, ageRange?: AgeRange, status?: Status, page?: number, limit?: number): Promise<{
+    getLastPayment(accountId: string): Promise<Date>;
+    getLastEntry(accountId: string): Promise<Date>;
+    getEntriesAfterLastPayment(accountId: string): Promise<Entry[]>;
+    getFilteredAccounts(search?: string, status?: Status, page?: number, limit?: number): Promise<{
         accounts: Account[];
         total: number;
     }>;
-    getAccountFrequencyAndSuspensionStatus(accountId: string): Promise<{
-        frequency: number;
+    getAllAccountsByRegistration(): Promise<{
+        accounts: Account[];
+        total: number;
+    }>;
+    getAllAccountsByLastPayment(): Promise<{
+        accounts: Account[];
+        total: number;
+    }>;
+    getAllAccountsByLastEntry(page?: number, limit?: number): Promise<{
+        accounts: Account[];
+        total: number;
+    }>;
+    getAccountFrequency(accountId: string): Promise<number>;
+    getSuspensionStatus(accountId: string): Promise<{
         suspensionRisk: boolean;
-        daysSinceLastPayment?: number | null;
+        daysSinceLastPayment: number | null;
     }>;
     calculateAccountRevenue(accountId: string, pricePerEntry: number, subscriptionPrice: number): Promise<number>;
     calculateTotalRevenue(pricePerEntry: number, subscriptionPrice: number): Promise<number>;
     suspendAccounts(): Promise<void>;
+    reportSuspensionRisks(): Promise<Account[]>;
+    getSexMetrics(): Promise<{
+        females: number;
+        males: number;
+    }>;
+    getAgeMetrics(): Promise<{
+        '18-25': number;
+        '25-35': number;
+        '35-45': number;
+        '45-70': number;
+    }>;
+    getAllMonthNewCustomers(): Promise<{
+        date: Date;
+        accounts: number;
+    }[]>;
+    getAllNewCustomers(): Promise<number>;
+    getAllActiveAccounts(): Promise<number>;
 }

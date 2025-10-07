@@ -20,7 +20,7 @@ export class EntriesController {
         return this.entryService.getAllEntriesSinceLastMonths();
     }
 
-    @Get('monthly-entries') 
+    @Get('monthly/entries') 
     async getMonthlyEntries( ) {
         return this.entryService.getAllMonthlyEntries();
     }

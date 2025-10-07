@@ -25,13 +25,12 @@ let EntryService = class EntryService {
         this.entryRepository = entryRepository;
         this.accountRepository = accountRepository;
     }
-    async createEntry(accountId, registered_at) {
+    async createEntry(accountId) {
         const account = await this.accountRepository.findOne({ where: { id: accountId } });
         if (!account) {
             throw new common_1.NotFoundException('Account not found');
         }
         const entry = await this.entryRepository.create({
-            registered_at,
             accountId,
             account
         });
@@ -41,9 +40,6 @@ let EntryService = class EntryService {
     async findById(id) {
         return this.entryRepository.findOne({ where: { id } });
     }
-    async findAllByDate(date) {
-        return this.entryRepository.find({ where: { registered_at: date } });
-    }
     async deleteEntry(id) {
         const entry = await this.entryRepository.findOne({ where: { id } });
         if (!entry) {
@@ -52,20 +48,41 @@ let EntryService = class EntryService {
         await this.entryRepository.remove(entry);
         return { message: 'Entry deleted Succsessfully' };
     }
-    async getAllAccountsEntries(accountId) {
-        const account = await this.accountRepository.findOne({ where: { id: accountId } });
-        if (!account) {
-            throw new common_1.NotFoundException('Account not found');
-        }
-        return this.entryRepository.find({ where: { accountId } });
-    }
     async getAllMonthlyEntries() {
         const currentDate = new Date();
         const lastMonthDate = new Date(currentDate);
         lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-        const entries = await this.entryRepository.find({
+        const allEntries = await this.entryRepository.find({
             where: {
-                registered_at: (0, typeorm_2.Between)(currentDate, lastMonthDate),
+                registered_at: (0, typeorm_2.Between)(lastMonthDate, currentDate),
+            },
+            order: {
+                registered_at: 'ASC',
+            },
+        });
+        const groupedEntries = {};
+        for (const entry of allEntries) {
+            const entryDate = new Date(entry.registered_at.toDateString());
+            const dateString = entryDate.toISOString().slice(0, 10);
+            if (groupedEntries[dateString]) {
+                groupedEntries[dateString].entries++;
+            }
+            else {
+                groupedEntries[dateString] = {
+                    date: entryDate,
+                    entries: 1,
+                };
+            }
+        }
+        return Object.values(groupedEntries);
+    }
+    async getAllEntriesSinceLastMonths() {
+        const currentDate = new Date();
+        const monthsBefore = new Date();
+        monthsBefore.setMonth(monthsBefore.getMonth() - 3);
+        const entries = await this.entryRepository.count({
+            where: {
+                registered_at: (0, typeorm_2.MoreThanOrEqual)(monthsBefore),
             },
         });
         return entries;

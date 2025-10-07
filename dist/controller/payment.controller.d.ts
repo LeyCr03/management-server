@@ -6,8 +6,9 @@ export declare class PaymentController {
         message: string;
     }>;
     create(id: string, registered_at: Date): Promise<import("../entity/payment.entity").Payment>;
-    getPaymentById(id: string): Promise<import("../entity/payment.entity").Payment | null>;
-    getPaymentsByDate(date: Date): Promise<import("../entity/payment.entity").Payment[] | null>;
-    getAccountPayments(id: string): Promise<import("../entity/payment.entity").Payment[]>;
-    getMonthlyPayments(): Promise<import("../entity/payment.entity").Payment[]>;
+    getPayments(): Promise<number>;
+    getMonthlyPayments(): Promise<{
+        date: Date;
+        payments: number;
+    }[]>;
 }

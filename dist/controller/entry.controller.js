@@ -23,17 +23,11 @@ let EntriesController = class EntriesController {
     async delete(id) {
         return this.entryService.deleteEntry(id);
     }
-    async create(id, registered_at) {
-        return this.entryService.createEntry(id, registered_at);
+    async create(id) {
+        return this.entryService.createEntry(id);
     }
-    async getEntryById(id) {
-        return this.entryService.findById(id);
-    }
-    async getEntriesByDate(date) {
-        return this.entryService.findAllByDate(date);
-    }
-    async getAccountEntries(id) {
-        return this.entryService.getAllAccountsEntries(id);
+    async getEntries() {
+        return this.entryService.getAllEntriesSinceLastMonths();
     }
     async getMonthlyEntries() {
         return this.entryService.getAllMonthlyEntries();
@@ -48,34 +42,18 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "delete", null);
 __decorate([
-    (0, common_1.Put)(':id'),
+    (0, common_1.Post)(':id'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Date]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)('entries'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], EntriesController.prototype, "getEntryById", null);
-__decorate([
-    (0, common_1.Get)('by-date'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Date]),
-    __metadata("design:returntype", Promise)
-], EntriesController.prototype, "getEntriesByDate", null);
-__decorate([
-    (0, common_1.Get)('account-entries/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], EntriesController.prototype, "getAccountEntries", null);
+], EntriesController.prototype, "getEntries", null);
 __decorate([
     (0, common_1.Get)('monthly-entries'),
     __metadata("design:type", Function),

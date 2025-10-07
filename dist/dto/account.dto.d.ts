@@ -4,5 +4,4 @@ export declare class CreateAccountDto {
     birth: Date;
     age: number;
     sex: Sex;
-    registered_at: Date;
 }

@@ -43,9 +43,6 @@ let PaymentService = class PaymentService {
     async findById(id) {
         return this.paymentRepository.findOne({ where: { id } });
     }
-    async findAllByDate(date) {
-        return this.paymentRepository.find({ where: { registered_at: date } });
-    }
     async deletePayment(id) {
         const payment = await this.paymentRepository.findOne({ where: { id } });
         if (!payment) {
@@ -54,23 +51,44 @@ let PaymentService = class PaymentService {
         await this.paymentRepository.remove(payment);
         return { message: ' Account deleted Succsessfully' };
     }
-    async getAllAccountsPayments(accountId) {
-        const account = await this.accountRepository.findOne({ where: { id: accountId } });
-        if (!account) {
-            throw new common_1.NotFoundException('Account not found');
-        }
-        return this.paymentRepository.find({ where: { accountId } });
-    }
-    async getAllMonthlyPayments() {
+    async getMonthlyPayments() {
         const currentDate = new Date();
         const lastMonthDate = new Date(currentDate);
         lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-        const payments = await this.paymentRepository.find({
+        const payments = await this.paymentRepository.count({
             where: {
                 registered_at: (0, typeorm_2.Between)(currentDate, lastMonthDate),
             },
         });
         return payments;
+    }
+    async getAllMonthlyPaymentsByDate() {
+        const currentDate = new Date();
+        const lastMonthDate = new Date(currentDate);
+        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+        const allpayments = await this.paymentRepository.find({
+            where: {
+                registered_at: (0, typeorm_2.Between)(lastMonthDate, currentDate),
+            },
+            order: {
+                registered_at: 'ASC',
+            },
+        });
+        const groupedpayments = {};
+        for (const entry of allpayments) {
+            const date = new Date(entry.registered_at.toDateString());
+            const dateString = date.toISOString().slice(0, 10);
+            if (groupedpayments[dateString]) {
+                groupedpayments[dateString].payments++;
+            }
+            else {
+                groupedpayments[dateString] = {
+                    date: date,
+                    payments: 1,
+                };
+            }
+        }
+        return Object.values(groupedpayments);
     }
 };
 exports.PaymentService = PaymentService;

@@ -5,9 +5,10 @@ export declare class EntriesController {
     delete(id: string): Promise<{
         message: string;
     }>;
-    create(id: string, registered_at: Date): Promise<import("../entity/entry.entity").Entry>;
-    getEntryById(id: string): Promise<import("../entity/entry.entity").Entry | null>;
-    getEntriesByDate(date: Date): Promise<import("../entity/entry.entity").Entry[]>;
-    getAccountEntries(id: string): Promise<import("../entity/entry.entity").Entry[]>;
-    getMonthlyEntries(): Promise<import("../entity/entry.entity").Entry[]>;
+    create(id: string): Promise<import("../entity/entry.entity").Entry>;
+    getEntries(): Promise<number>;
+    getMonthlyEntries(): Promise<{
+        date: Date;
+        entries: number;
+    }[]>;
 }

@@ -26,17 +26,11 @@ let PaymentController = class PaymentController {
     async create(id, registered_at) {
         return this.paymentService.createPayment(id, registered_at);
     }
-    async getPaymentById(id) {
-        return this.paymentService.findById(id);
-    }
-    async getPaymentsByDate(date) {
-        return this.paymentService.findAllByDate(date);
-    }
-    async getAccountPayments(id) {
-        return this.paymentService.getAllAccountsPayments(id);
+    async getPayments() {
+        return this.paymentService.getMonthlyPayments();
     }
     async getMonthlyPayments() {
-        return this.paymentService.getAllMonthlyPayments();
+        return this.paymentService.getAllMonthlyPaymentsByDate();
     }
 };
 exports.PaymentController = PaymentController;
@@ -48,7 +42,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "delete", null);
 __decorate([
-    (0, common_1.Put)(':id'),
+    (0, common_1.Post)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -56,26 +50,11 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)('payments'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], PaymentController.prototype, "getPaymentById", null);
-__decorate([
-    (0, common_1.Get)('by-date'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Date]),
-    __metadata("design:returntype", Promise)
-], PaymentController.prototype, "getPaymentsByDate", null);
-__decorate([
-    (0, common_1.Get)('account-payments/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], PaymentController.prototype, "getAccountPayments", null);
+], PaymentController.prototype, "getPayments", null);
 __decorate([
     (0, common_1.Get)('monthly-payments'),
     __metadata("design:type", Function),
