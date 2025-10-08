@@ -23,7 +23,7 @@ export declare class AccountService {
         accounts: Account[];
         total: number;
     }>;
-    getAllAccountsByRegistration(): Promise<{
+    getAllAccountsByRegistration(page?: number, limit?: number): Promise<{
         accounts: Account[];
         total: number;
     }>;

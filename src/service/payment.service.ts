@@ -95,4 +95,9 @@ export class PaymentService {
         // Convert the object to an array
         return Object.values(groupedpayments);
     }
+
+    async getAllPayments(): Promise <Payment[]>{
+      const payments = await this.paymentRepository.find();
+      return payments
+    }
 }

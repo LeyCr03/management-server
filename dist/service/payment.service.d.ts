@@ -15,4 +15,5 @@ export declare class PaymentService {
         date: Date;
         payments: number;
     }[]>;
+    getAllPayments(): Promise<Payment[]>;
 }

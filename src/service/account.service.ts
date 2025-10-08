@@ -62,7 +62,11 @@ export class AccountService {
     async getLastPayment(accountId: string) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new NotFoundException('Account with ID ${id} not found.');
+            throw new NotFoundException('Account with ID ${accountId} not found.');
+        }
+        
+        if(!account.payments) {
+            throw new NotFoundException(`No payments registered for account with id ${accountId}`)
         }
 
         const last_payment = account.payments[0].registered_at;
@@ -74,7 +78,10 @@ export class AccountService {
     async getLastEntry(accountId: string) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new NotFoundException('Account with ID ${id} not found.');
+            throw new NotFoundException('Account with ID ${accountId} not found.');
+        }
+        if(!account.entries) {
+            throw new NotFoundException(`No entries registered for account with id ${accountId}`)
         }
 
         const last_entry = account.entries[0].registered_at;

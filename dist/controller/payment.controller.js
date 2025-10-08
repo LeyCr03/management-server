@@ -32,6 +32,9 @@ let PaymentController = class PaymentController {
     async getMonthlyPayments() {
         return this.paymentService.getAllMonthlyPaymentsByDate();
     }
+    async geAllPayments() {
+        return this.paymentService.getAllPayments();
+    }
 };
 exports.PaymentController = PaymentController;
 __decorate([
@@ -56,11 +59,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "getPayments", null);
 __decorate([
-    (0, common_1.Get)('monthly-payments'),
+    (0, common_1.Get)('monthly/payments'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "getMonthlyPayments", null);
+__decorate([
+    (0, common_1.Get)('allpayments'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], PaymentController.prototype, "geAllPayments", null);
 exports.PaymentController = PaymentController = __decorate([
     (0, common_1.Controller)('api/payments'),
     __metadata("design:paramtypes", [payment_service_1.PaymentService])

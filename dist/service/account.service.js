@@ -58,7 +58,10 @@ let AccountService = class AccountService {
     async getLastPayment(accountId) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new common_1.NotFoundException('Account with ID ${id} not found.');
+            throw new common_1.NotFoundException('Account with ID ${accountId} not found.');
+        }
+        if (!account.payments) {
+            throw new common_1.NotFoundException(`No payments registered for account with id ${accountId}`);
         }
         const last_payment = account.payments[0].registered_at;
         return last_payment;
@@ -66,7 +69,10 @@ let AccountService = class AccountService {
     async getLastEntry(accountId) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new common_1.NotFoundException('Account with ID ${id} not found.');
+            throw new common_1.NotFoundException('Account with ID ${accountId} not found.');
+        }
+        if (!account.entries) {
+            throw new common_1.NotFoundException(`No entries registered for account with id ${accountId}`);
         }
         const last_entry = account.entries[0].registered_at;
         return last_entry;
@@ -96,13 +102,15 @@ let AccountService = class AccountService {
         const [accounts, total] = await this.accountRepository.findAndCount(findOptions);
         return { accounts, total };
     }
-    async getAllAccountsByRegistration() {
-        const page = 1;
-        const limit = 10;
+    async getAllAccountsByRegistration(page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        const accounts = await this.accountRepository.find();
-        accounts.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime());
-        const total = accounts.length;
+        const [accounts, total] = await this.accountRepository.findAndCount({
+            order: {
+                registered_at: 'DESC',
+            },
+            skip: skip,
+            take: limit,
+        });
         return { accounts, total };
     }
     async getAllAccountsByLastPayment() {

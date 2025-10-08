@@ -52,8 +52,8 @@ let AccountController = class AccountController {
     async getAllAccounts() {
         return this.accountService.getAllAccountsByLastPayment();
     }
-    async getAllAccountsByRegistration() {
-        return this.accountService.getAllAccountsByRegistration();
+    async getAllAccountsByRegistration(page, limit) {
+        return this.accountService.getAllAccountsByRegistration(page, limit);
     }
     async getFilteredAccounts(search, status) {
         return this.accountService.getFilteredAccounts(search, status);
@@ -133,14 +133,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAccountRevenue", null);
 __decorate([
-    (0, common_1.Get)('last-payment/:id'),
+    (0, common_1.Get)('last/payment/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAccountLastPayment", null);
 __decorate([
-    (0, common_1.Get)('last-entry/:id'),
+    (0, common_1.Get)('last/entry/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -154,19 +154,21 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAccountEntiesAfterLastPayment", null);
 __decorate([
-    (0, common_1.Get)('by-last-payment'),
+    (0, common_1.Get)('by/last/payment'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAllAccounts", null);
 __decorate([
     (0, common_1.Get)('by/registration'),
+    __param(0, (0, common_1.Query)('page', new common_1.DefaultValuePipe(1), common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)('limit', new common_1.DefaultValuePipe(10), common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAllAccountsByRegistration", null);
 __decorate([
-    (0, common_1.Get)('by-filter'),
+    (0, common_1.Get)('by/filter'),
     __param(0, (0, common_1.Query)('search')),
     __param(1, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
@@ -189,14 +191,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getFrequency", null);
 __decorate([
-    (0, common_1.Get)('suspension-status/:id'),
+    (0, common_1.Get)('suspension/status/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getSuspension", null);
 __decorate([
-    (0, common_1.Get)('suspension-report'),
+    (0, common_1.Get)('suspension/report'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -214,19 +216,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAgeMetrics", null);
 __decorate([
-    (0, common_1.Get)('month-new-customers'),
+    (0, common_1.Get)('month/new/customers'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getMonthNewCustomers", null);
 __decorate([
-    (0, common_1.Get)('new-customers'),
+    (0, common_1.Get)('new/customers'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getNewCustomers", null);
 __decorate([
-    (0, common_1.Get)('active-accounts'),
+    (0, common_1.Get)('active/accounts'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

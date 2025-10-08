@@ -11,4 +11,5 @@ export declare class PaymentController {
         date: Date;
         payments: number;
     }[]>;
+    geAllPayments(): Promise<import("../entity/payment.entity").Payment[]>;
 }

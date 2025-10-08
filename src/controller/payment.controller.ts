@@ -26,4 +26,8 @@ export class PaymentController {
         return this.paymentService.getAllMonthlyPaymentsByDate();
     }
 
+    @Get('allpayments') 
+    async geAllPayments( ) {
+        return this.paymentService.getAllPayments();
+    }
 }

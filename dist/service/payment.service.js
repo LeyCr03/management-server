@@ -90,6 +90,10 @@ let PaymentService = class PaymentService {
         }
         return Object.values(groupedpayments);
     }
+    async getAllPayments() {
+        const payments = await this.paymentRepository.find();
+        return payments;
+    }
 };
 exports.PaymentService = PaymentService;
 exports.PaymentService = PaymentService = __decorate([

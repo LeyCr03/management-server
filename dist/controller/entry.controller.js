@@ -55,7 +55,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "getEntries", null);
 __decorate([
-    (0, common_1.Get)('monthly-entries'),
+    (0, common_1.Get)('monthly/entries'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
