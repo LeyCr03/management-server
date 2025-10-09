@@ -48,12 +48,12 @@ export class PaymentService {
 
 
   //get all payments done during the last month
-  async getMonthlyPayments():Promise<number> {
+  async getMonthlyPayments(): Promise<number> {
     const currentDate = new Date();
     const lastMonthDate = new Date(currentDate);
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
-   
+
     const payments = await this.paymentRepository.count({
       where: {
         registered_at: Between(currentDate, lastMonthDate),
@@ -63,41 +63,56 @@ export class PaymentService {
     return payments;
   }
 
-  async getAllMonthlyPaymentsByDate(): Promise<{ date: Date; payments: number }[]> {
-        const currentDate = new Date();
-        const lastMonthDate = new Date(currentDate);
-        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+  async getAllPayments(): Promise<Payment[]> {
+    const payments = await this.paymentRepository.find();
+    return payments
+  }
 
-        const allpayments = await this.paymentRepository.find({
-            where: {
-                registered_at: Between(lastMonthDate, currentDate),
-            },
-            order: {
-                registered_at: 'ASC',
-            },
-        });
-        const groupedpayments: { [dateString: string]: { date: Date; payments: number } } = {};
+  async getRevenueData(pricePerEntry: number): Promise<{ date: Date; revenue: number }[]> {
+    const currentDate = new Date();
+    const monthDate = new Date(currentDate);
+    monthDate.setMonth(monthDate.getMonth() - 1);
 
-        for (const entry of allpayments) {
-            const date = new Date(entry.registered_at.toDateString());
-            const dateString = date.toISOString().slice(0, 10);
+    // Fetch all payments within the last 3 months
+    const allPayments = await this.paymentRepository.find({
+      where: {
+        registered_at: Between(monthDate, currentDate),
+      },
+      order: {
+        registered_at: 'ASC',
+      },
+    });
 
-            if (groupedpayments[dateString]) {
-                groupedpayments[dateString].payments++;
-            } else {
-                groupedpayments[dateString] = {
-                    date: date,
-                    payments: 1,
-                };
-            }
-        }
+    const groupedPayments: { [dateString: string]: { date: Date; revenue: number } } = {};
 
-        // Convert the object to an array
-        return Object.values(groupedpayments);
+    for (const payment of allPayments) {
+      const date = new Date(payment.registered_at.toDateString());
+      const dateString = date.toISOString().slice(0, 10);
+
+      if (groupedPayments[dateString]) {
+        groupedPayments[dateString].revenue += pricePerEntry;
+      } else {
+        groupedPayments[dateString] = {
+          date: date,
+          revenue: pricePerEntry,
+        };
+      }
     }
 
-    async getAllPayments(): Promise <Payment[]>{
-      const payments = await this.paymentRepository.find();
-      return payments
+    return Object.values(groupedPayments);
+  }
+
+  async getLastPayment(accountId: string): Promise<Date > {
+    const lastPayment = await this.paymentRepository
+      .createQueryBuilder('payment')
+      .where('payment.accountId = :accountId', { accountId })
+      .orderBy('payment.registered_at', 'DESC')
+      .getOne();
+
+    if (!lastPayment) {
+      throw new NotFoundException(`No payments registered for account with id ${accountId}`); // Alternative
     }
+
+    return lastPayment.registered_at;
+  }
 }

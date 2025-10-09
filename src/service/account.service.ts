@@ -5,6 +5,8 @@ import { Account } from "src/entity/account.entity";
 import { CreateAccountDto } from "src/dto/account.dto";
 import { Sex, Status } from "src/types";
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { EntryService } from "./entry.service";
+import { PaymentService } from "./payment.service";
 import { Entry } from "src/entity/entry.entity";
 
 @Injectable()
@@ -13,6 +15,8 @@ export class AccountService {
     constructor(
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
+        private readonly entryService: EntryService,
+        private readonly paymentService: PaymentService
     ) {
         this.logger = new Logger("Account")
     }
@@ -32,7 +36,7 @@ export class AccountService {
         return this.accountRepository.findOne({ where: { id } });
     }
     //find by name
-    async findByName(name: string): Promise<Account | null> { // Find Account by email
+    async findByName(name: string): Promise<Account | null> { // Find Account by name
         return this.accountRepository.findOne({ where: { name } });
     }
     //delete account
@@ -58,48 +62,51 @@ export class AccountService {
         return { message: ' Account Updated' };
     }
 
-    //get las_payment
-    async getLastPayment(accountId: string) {
-        const account = await this.findById(accountId);
-        if (!account) {
-            throw new NotFoundException('Account with ID ${accountId} not found.');
-        }
-        
-        if(!account.payments) {
-            throw new NotFoundException(`No payments registered for account with id ${accountId}`)
-        }
-
-        const last_payment = account.payments[0].registered_at;
-
-        return last_payment
-    }
-
-    //get last_entry
-    async getLastEntry(accountId: string) {
-        const account = await this.findById(accountId);
-        if (!account) {
-            throw new NotFoundException('Account with ID ${accountId} not found.');
-        }
-        if(!account.entries) {
-            throw new NotFoundException(`No entries registered for account with id ${accountId}`)
-        }
-
-        const last_entry = account.entries[0].registered_at;
-
-        return last_entry
-    }
-
-    async getEntriesAfterLastPayment(accountId: string): Promise<Entry[]> {
+    async getLastPayment(accountId: string): Promise<Date> {
         const account = await this.findById(accountId);
         if (!account) {
             throw new NotFoundException('Account with ID ${id} not found.');
         }
-        const last_payment = await this.getLastPayment(accountId);
-        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (last_payment ? last_payment : new Date(0)));
-        return entriesAfterLastPayment;
 
+        const lastPaymentDate = await this.paymentService.getLastPayment(accountId);
+        return lastPaymentDate;
     }
 
+    async getLastEntry(accountId: string): Promise<Date> {
+
+        const account = await this.findById(accountId);
+        if (!account) {
+            throw new NotFoundException('Account with ID ${id} not found.');
+        }
+
+        const lastEntryDate = await this.entryService.getLastEntry(accountId);
+        return lastEntryDate;
+    }
+
+    async getEntriesAfterLastPayment(accountId: string): Promise<Entry[]> {
+        const lastPaymentDate = await this.getLastPayment(accountId);
+
+        const account = await this.accountRepository.findOne({
+            where: { id: accountId },
+            relations: ['entries'],
+        });
+
+    if (!account) {
+            throw new NotFoundException(`Account with ID ${accountId} not found.`);
+    }
+        let entries = account.entries;
+
+        if(lastPaymentDate){
+         entries = account.entries.filter((entry) => entry.registered_at > lastPaymentDate)
+        }
+
+    return entries
+  }
+
+    async getAccountFrequency(accountId: string): Promise<number> {
+        const frequency = await this.getEntriesAfterLastPayment(accountId);
+        return frequency.length;
+    }
 
     //!filter accounts by status or name with pagination
 
@@ -131,7 +138,7 @@ export class AccountService {
         return { accounts, total };
     }
 
-   async getAllAccountsByRegistration(
+    async getAllAccountsByRegistration(
         page: number = 1,
         limit: number = 10
     ): Promise<{ accounts: Account[]; total: number }> {
@@ -154,7 +161,7 @@ export class AccountService {
     ): Promise<{ accounts: Account[]; total: number }> {
         const page = 1;
         const limit = 10;
-        
+
 
         const skip = (page - 1) * limit;
 
@@ -186,11 +193,6 @@ export class AccountService {
 
     //get frequency , suspension status and days since last payment
 
-    async getAccountFrequency(accountId: string): Promise<number> {
-        const frequency = await this.getEntriesAfterLastPayment(accountId);
-        return frequency.length;
-    }
-
 
     async getSuspensionStatus(accountId: string) {
 
@@ -209,19 +211,8 @@ export class AccountService {
         pricePerEntry: number,
         subscriptionPrice: number
     ): Promise<number> {
-        const account = await this.accountRepository.findOne({
-            where: { id: accountId },
-            relations: ['payments', 'entries'],
-        });
-
-        if (!account) {
-            throw new Error('Account not found');
-        }
-
-        const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
-
-        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0)));
-
+        const last_payment = await this.getLastPayment(accountId);
+        const entriesAfterLastPayment = await this.getEntriesAfterLastPayment(accountId);
         const revenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
 
         return revenue;
@@ -235,12 +226,9 @@ export class AccountService {
 
         let totalRevenue = 0;
         for (const account of accounts) {
-            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
+            const lastPayment = await this.getLastPayment(account.id);
+            const entriesAfterLastPayment = await this.getEntriesAfterLastPayment(account.id);
 
-            //2. Calculate the frecquency after last payment
-            const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0)));
-
-            // Calculate estimated revenue for the single account
             const accountRevenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
             totalRevenue += accountRevenue;
         }
@@ -303,34 +291,41 @@ export class AccountService {
 
     //Notifications for suspensions risk
     async reportSuspensionRisks(): Promise<Account[]> {
-        const accounts = await this.accountRepository.find({
-            where: { status: Status.ACTIVE },
-            relations: ['payments'],
-        });
-
+        const currentDate = new Date();
         const riskedAccounts: Account[] = [];
+        const accounts = await this.accountRepository
+            .createQueryBuilder('account')
+            .leftJoinAndSelect(
+                'account.payments',
+                'payment',
+                'payment.registered_at = (SELECT MAX(registered_at) FROM payments WHERE accountId = account.id)', // Correctly retrieves the latest payment
+            )
+            .where('account.status = :status', { status: Status.ACTIVE })
+            .andWhere(
+                '(payment.registered_at IS NULL OR payment.registered_at <= :suspensionThreshold)',
+                { suspensionThreshold: new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate()) },
+            )  // Uses correct ISO date format
+            .getMany();
 
         for (const account of accounts) {
-            if (!account.payments || account.payments.length === 0) { // Check if payments exist BEFORE sorting
-                account.status = Status.SUSPENDED;
-                await this.accountRepository.save(account);
-                continue; // Move to the next account
+            // If there are no payments, suspend the account
+            if (!account.payments || account.payments.length === 0) {
+                continue;
             }
 
-            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
+            // Get the last payment from the account.payments (as it may contain more than one.
+            const lastPayment = await this.getLastPayment(account.id)
 
-            const currentDate = new Date();
-            const suspendDate = new Date(lastPayment.registered_at);
-
+            const suspendDate = new Date(lastPayment);
             suspendDate.setMonth(suspendDate.getMonth() + 1);
+
+            // Check if the account is at risk of suspension (within the last day)
             const timeDiff = suspendDate.getTime() - currentDate.getTime();
             const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
             if (dayDiff <= 1) {
                 riskedAccounts.push(account);
             }
-
-
         }
 
         return riskedAccounts;
@@ -430,7 +425,6 @@ export class AccountService {
 
         return accounts;
     }
-
 
 
 }

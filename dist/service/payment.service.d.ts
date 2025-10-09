@@ -11,9 +11,10 @@ export declare class PaymentService {
         message: string;
     }>;
     getMonthlyPayments(): Promise<number>;
-    getAllMonthlyPaymentsByDate(): Promise<{
-        date: Date;
-        payments: number;
-    }[]>;
     getAllPayments(): Promise<Payment[]>;
+    getRevenueData(pricePerEntry: number): Promise<{
+        date: Date;
+        revenue: number;
+    }[]>;
+    getLastPayment(accountId: string): Promise<Date>;
 }

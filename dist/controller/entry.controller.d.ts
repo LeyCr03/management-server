@@ -11,4 +11,5 @@ export declare class EntriesController {
         date: Date;
         entries: number;
     }[]>;
+    geAllEntries(): Promise<import("../entity/entry.entity").Entry[]>;
 }

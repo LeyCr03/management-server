@@ -12,6 +12,8 @@ const typeorm_1 = require("@nestjs/typeorm");
 const account_controller_1 = require("../controller/account.controller");
 const account_entity_1 = require("../entity/account.entity");
 const account_service_1 = require("../service/account.service");
+const entry_module_1 = require("./entry.module");
+const payment_module_1 = require("./payment.module");
 let AccountModule = class AccountModule {
 };
 exports.AccountModule = AccountModule;
@@ -19,6 +21,8 @@ exports.AccountModule = AccountModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([account_entity_1.Account]),
+            entry_module_1.EntryModule,
+            payment_module_1.PaymentModule
         ],
         controllers: [account_controller_1.AccountController],
         providers: [account_service_1.AccountService, common_1.Logger],

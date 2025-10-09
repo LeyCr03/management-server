@@ -62,37 +62,48 @@ let PaymentService = class PaymentService {
         });
         return payments;
     }
-    async getAllMonthlyPaymentsByDate() {
+    async getAllPayments() {
+        const payments = await this.paymentRepository.find();
+        return payments;
+    }
+    async getRevenueData(pricePerEntry) {
         const currentDate = new Date();
-        const lastMonthDate = new Date(currentDate);
-        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-        const allpayments = await this.paymentRepository.find({
+        const monthDate = new Date(currentDate);
+        monthDate.setMonth(monthDate.getMonth() - 1);
+        const allPayments = await this.paymentRepository.find({
             where: {
-                registered_at: (0, typeorm_2.Between)(lastMonthDate, currentDate),
+                registered_at: (0, typeorm_2.Between)(monthDate, currentDate),
             },
             order: {
                 registered_at: 'ASC',
             },
         });
-        const groupedpayments = {};
-        for (const entry of allpayments) {
-            const date = new Date(entry.registered_at.toDateString());
+        const groupedPayments = {};
+        for (const payment of allPayments) {
+            const date = new Date(payment.registered_at.toDateString());
             const dateString = date.toISOString().slice(0, 10);
-            if (groupedpayments[dateString]) {
-                groupedpayments[dateString].payments++;
+            if (groupedPayments[dateString]) {
+                groupedPayments[dateString].revenue += pricePerEntry;
             }
             else {
-                groupedpayments[dateString] = {
+                groupedPayments[dateString] = {
                     date: date,
-                    payments: 1,
+                    revenue: pricePerEntry,
                 };
             }
         }
-        return Object.values(groupedpayments);
+        return Object.values(groupedPayments);
     }
-    async getAllPayments() {
-        const payments = await this.paymentRepository.find();
-        return payments;
+    async getLastPayment(accountId) {
+        const lastPayment = await this.paymentRepository
+            .createQueryBuilder('payment')
+            .where('payment.accountId = :accountId', { accountId })
+            .orderBy('payment.registered_at', 'DESC')
+            .getOne();
+        if (!lastPayment) {
+            throw new common_1.NotFoundException(`No payments registered for account with id ${accountId}`);
+        }
+        return lastPayment.registered_at;
     }
 };
 exports.PaymentService = PaymentService;

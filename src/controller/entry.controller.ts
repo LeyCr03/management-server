@@ -15,14 +15,20 @@ export class EntriesController {
         return this.entryService.createEntry(id);
     }
 
-    @Get('entries') 
+    @Get('tree/month') 
     async getEntries() {
         return this.entryService.getAllEntriesSinceLastMonths();
     }
 
-    @Get('monthly/entries') 
+    @Get('month/data') 
     async getMonthlyEntries( ) {
         return this.entryService.getAllMonthlyEntries();
     }
+
+    @Get('all') 
+    async geAllEntries( ) {
+        return this.entryService.getAllEntries();
+    }
+
 
 }

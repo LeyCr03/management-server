@@ -1,4 +1,4 @@
-import { Controller, Delete, Put, Body, Get, Param, Post } from "@nestjs/common"
+import { Controller, Delete, Put, Body, Get, Param, Post, Query } from "@nestjs/common"
 import { PaymentService } from "src/service/payment.service"
 
 @Controller('api/payments')
@@ -16,18 +16,22 @@ export class PaymentController {
     }
 
 
-    @Get('payments') 
+    @Get('month') 
     async getPayments() {
         return this.paymentService.getMonthlyPayments();
     }
 
-    @Get('monthly/payments') 
-    async getMonthlyPayments( ) {
-        return this.paymentService.getAllMonthlyPaymentsByDate();
+    @Get('revenue/data') 
+    async getMonthlyPayments(
+        @Query('subscriptionPrice') subscriptionPrice: number
+     ) {
+        return this.paymentService.getRevenueData( subscriptionPrice);
     }
 
-    @Get('allpayments') 
+    @Get('all') 
     async geAllPayments( ) {
         return this.paymentService.getAllPayments();
     }
+
+
 }

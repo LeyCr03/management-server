@@ -19,11 +19,17 @@ const common_1 = require("@nestjs/common");
 const account_entity_1 = require("../entity/account.entity");
 const types_1 = require("../types");
 const schedule_1 = require("@nestjs/schedule");
+const entry_service_1 = require("./entry.service");
+const payment_service_1 = require("./payment.service");
 let AccountService = class AccountService {
     accountRepository;
+    entryService;
+    paymentService;
     logger;
-    constructor(accountRepository) {
+    constructor(accountRepository, entryService, paymentService) {
         this.accountRepository = accountRepository;
+        this.entryService = entryService;
+        this.paymentService = paymentService;
         this.logger = new common_1.Logger("Account");
     }
     async createAccount(createAccountDto) {
@@ -58,33 +64,37 @@ let AccountService = class AccountService {
     async getLastPayment(accountId) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new common_1.NotFoundException('Account with ID ${accountId} not found.');
+            throw new common_1.NotFoundException('Account with ID ${id} not found.');
         }
-        if (!account.payments) {
-            throw new common_1.NotFoundException(`No payments registered for account with id ${accountId}`);
-        }
-        const last_payment = account.payments[0].registered_at;
-        return last_payment;
+        const lastPaymentDate = await this.paymentService.getLastPayment(accountId);
+        return lastPaymentDate;
     }
     async getLastEntry(accountId) {
         const account = await this.findById(accountId);
         if (!account) {
-            throw new common_1.NotFoundException('Account with ID ${accountId} not found.');
-        }
-        if (!account.entries) {
-            throw new common_1.NotFoundException(`No entries registered for account with id ${accountId}`);
-        }
-        const last_entry = account.entries[0].registered_at;
-        return last_entry;
-    }
-    async getEntriesAfterLastPayment(accountId) {
-        const account = await this.findById(accountId);
-        if (!account) {
             throw new common_1.NotFoundException('Account with ID ${id} not found.');
         }
-        const last_payment = await this.getLastPayment(accountId);
-        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (last_payment ? last_payment : new Date(0)));
-        return entriesAfterLastPayment;
+        const lastEntryDate = await this.entryService.getLastEntry(accountId);
+        return lastEntryDate;
+    }
+    async getEntriesAfterLastPayment(accountId) {
+        const lastPaymentDate = await this.getLastPayment(accountId);
+        const account = await this.accountRepository.findOne({
+            where: { id: accountId },
+            relations: ['entries'],
+        });
+        if (!account) {
+            throw new common_1.NotFoundException(`Account with ID ${accountId} not found.`);
+        }
+        let entries = account.entries;
+        if (lastPaymentDate) {
+            entries = account.entries.filter((entry) => entry.registered_at > lastPaymentDate);
+        }
+        return entries;
+    }
+    async getAccountFrequency(accountId) {
+        const frequency = await this.getEntriesAfterLastPayment(accountId);
+        return frequency.length;
     }
     async getFilteredAccounts(search, status, page = 1, limit = 10) {
         const where = {};
@@ -135,10 +145,6 @@ let AccountService = class AccountService {
             .getManyAndCount();
         return { accounts, total };
     }
-    async getAccountFrequency(accountId) {
-        const frequency = await this.getEntriesAfterLastPayment(accountId);
-        return frequency.length;
-    }
     async getSuspensionStatus(accountId) {
         const last_payment = await this.getLastPayment(accountId);
         const currentDate = new Date();
@@ -148,15 +154,8 @@ let AccountService = class AccountService {
         return { suspensionRisk, daysSinceLastPayment };
     }
     async calculateAccountRevenue(accountId, pricePerEntry, subscriptionPrice) {
-        const account = await this.accountRepository.findOne({
-            where: { id: accountId },
-            relations: ['payments', 'entries'],
-        });
-        if (!account) {
-            throw new Error('Account not found');
-        }
-        const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
-        const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0)));
+        const last_payment = await this.getLastPayment(accountId);
+        const entriesAfterLastPayment = await this.getEntriesAfterLastPayment(accountId);
         const revenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
         return revenue;
     }
@@ -164,8 +163,8 @@ let AccountService = class AccountService {
         const accounts = await this.accountRepository.find({ relations: ['payments', 'entries'] });
         let totalRevenue = 0;
         for (const account of accounts) {
-            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
-            const entriesAfterLastPayment = account.entries.filter(entry => entry.registered_at > (lastPayment ? lastPayment.registered_at : new Date(0)));
+            const lastPayment = await this.getLastPayment(account.id);
+            const entriesAfterLastPayment = await this.getEntriesAfterLastPayment(account.id);
             const accountRevenue = (entriesAfterLastPayment.length * pricePerEntry) - subscriptionPrice;
             totalRevenue += accountRevenue;
         }
@@ -209,20 +208,20 @@ let AccountService = class AccountService {
         this.logger.log('Account suspension check complete.');
     }
     async reportSuspensionRisks() {
-        const accounts = await this.accountRepository.find({
-            where: { status: types_1.Status.ACTIVE },
-            relations: ['payments'],
-        });
+        const currentDate = new Date();
         const riskedAccounts = [];
+        const accounts = await this.accountRepository
+            .createQueryBuilder('account')
+            .leftJoinAndSelect('account.payments', 'payment', 'payment.registered_at = (SELECT MAX(registered_at) FROM payments WHERE accountId = account.id)')
+            .where('account.status = :status', { status: types_1.Status.ACTIVE })
+            .andWhere('(payment.registered_at IS NULL OR payment.registered_at <= :suspensionThreshold)', { suspensionThreshold: new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate()) })
+            .getMany();
         for (const account of accounts) {
             if (!account.payments || account.payments.length === 0) {
-                account.status = types_1.Status.SUSPENDED;
-                await this.accountRepository.save(account);
                 continue;
             }
-            const lastPayment = account.payments.sort((a, b) => b.registered_at.getTime() - a.registered_at.getTime())[0];
-            const currentDate = new Date();
-            const suspendDate = new Date(lastPayment.registered_at);
+            const lastPayment = await this.getLastPayment(account.id);
+            const suspendDate = new Date(lastPayment);
             suspendDate.setMonth(suspendDate.getMonth() + 1);
             const timeDiff = suspendDate.getTime() - currentDate.getTime();
             const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -317,6 +316,8 @@ __decorate([
 exports.AccountService = AccountService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(account_entity_1.Account)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        entry_service_1.EntryService,
+        payment_service_1.PaymentService])
 ], AccountService);
 //# sourceMappingURL=account.service.js.map

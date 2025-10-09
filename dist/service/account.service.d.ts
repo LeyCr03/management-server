@@ -2,11 +2,15 @@ import { Repository } from "typeorm";
 import { Account } from "src/entity/account.entity";
 import { CreateAccountDto } from "src/dto/account.dto";
 import { Status } from "src/types";
+import { EntryService } from "./entry.service";
+import { PaymentService } from "./payment.service";
 import { Entry } from "src/entity/entry.entity";
 export declare class AccountService {
     private readonly accountRepository;
+    private readonly entryService;
+    private readonly paymentService;
     private readonly logger;
-    constructor(accountRepository: Repository<Account>);
+    constructor(accountRepository: Repository<Account>, entryService: EntryService, paymentService: PaymentService);
     createAccount(createAccountDto: CreateAccountDto): Promise<Account>;
     findById(id: string): Promise<Account | null>;
     findByName(name: string): Promise<Account | null>;
@@ -19,6 +23,7 @@ export declare class AccountService {
     getLastPayment(accountId: string): Promise<Date>;
     getLastEntry(accountId: string): Promise<Date>;
     getEntriesAfterLastPayment(accountId: string): Promise<Entry[]>;
+    getAccountFrequency(accountId: string): Promise<number>;
     getFilteredAccounts(search?: string, status?: Status, page?: number, limit?: number): Promise<{
         accounts: Account[];
         total: number;
@@ -35,7 +40,6 @@ export declare class AccountService {
         accounts: Account[];
         total: number;
     }>;
-    getAccountFrequency(accountId: string): Promise<number>;
     getSuspensionStatus(accountId: string): Promise<{
         suspensionRisk: boolean;
         daysSinceLastPayment: number | null;

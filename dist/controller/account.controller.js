@@ -37,20 +37,18 @@ let AccountController = class AccountController {
     async getAccountByName(name) {
         return this.accountService.findByName(name);
     }
-    async getAccountRevenue(id, pricePerEntry, subscriptionPrice) {
-        return this.accountService.calculateAccountRevenue(id, pricePerEntry, subscriptionPrice);
-    }
     async getAccountLastPayment(id) {
-        return this.accountService.getLastPayment(id);
+        const last_payment = await this.accountService.getLastPayment(id);
+        return last_payment;
     }
     async getAccountLastEntry(id) {
         return this.accountService.getLastEntry(id);
     }
-    async getAccountEntiesAfterLastPayment(id) {
-        return this.accountService.getEntriesAfterLastPayment(id);
-    }
-    async getAllAccounts() {
+    async getAllAccountsByPayment() {
         return this.accountService.getAllAccountsByLastPayment();
+    }
+    async getAllAccountsByEntry() {
+        return this.accountService.getAllAccountsByLastEntry();
     }
     async getAllAccountsByRegistration(page, limit) {
         return this.accountService.getAllAccountsByRegistration(page, limit);
@@ -58,11 +56,11 @@ let AccountController = class AccountController {
     async getFilteredAccounts(search, status) {
         return this.accountService.getFilteredAccounts(search, status);
     }
+    async getAccountRevenue(id, pricePerEntry, subscriptionPrice) {
+        return this.accountService.calculateAccountRevenue(id, pricePerEntry, subscriptionPrice);
+    }
     async getRevenue(pricePerEntry, subscriptionPrice) {
         return this.accountService.calculateTotalRevenue(pricePerEntry, subscriptionPrice);
-    }
-    async getFrequency(id) {
-        return this.accountService.getAccountFrequency(id);
     }
     async getSuspension(id) {
         return this.accountService.getSuspensionStatus(id);
@@ -84,6 +82,12 @@ let AccountController = class AccountController {
     }
     async getActiveAccounts() {
         return this.accountService.getAllActiveAccounts();
+    }
+    async getEntriesAfterLastPayment(id) {
+        return this.accountService.getEntriesAfterLastPayment(id);
+    }
+    async getFreqency(id) {
+        return this.accountService.getAccountFrequency(id);
     }
 };
 exports.AccountController = AccountController;
@@ -124,15 +128,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAccountByName", null);
 __decorate([
-    (0, common_1.Get)('revenue/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Query)('pricePerEntry')),
-    __param(2, (0, common_1.Query)('subscriptionPrice')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
-    __metadata("design:returntype", Promise)
-], AccountController.prototype, "getAccountRevenue", null);
-__decorate([
     (0, common_1.Get)('last/payment/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -147,18 +142,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAccountLastEntry", null);
 __decorate([
-    (0, common_1.Get)('entries/afterLastPayment/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], AccountController.prototype, "getAccountEntiesAfterLastPayment", null);
-__decorate([
-    (0, common_1.Get)('by/last/payment'),
+    (0, common_1.Get)('ordered/by/last/payment'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], AccountController.prototype, "getAllAccounts", null);
+], AccountController.prototype, "getAllAccountsByPayment", null);
+__decorate([
+    (0, common_1.Get)('ordered/by/last/entry'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AccountController.prototype, "getAllAccountsByEntry", null);
 __decorate([
     (0, common_1.Get)('by/registration'),
     __param(0, (0, common_1.Query)('page', new common_1.DefaultValuePipe(1), common_1.ParseIntPipe)),
@@ -168,7 +162,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAllAccountsByRegistration", null);
 __decorate([
-    (0, common_1.Get)('by/filter'),
+    (0, common_1.Get)('filter/by'),
     __param(0, (0, common_1.Query)('search')),
     __param(1, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
@@ -176,20 +170,22 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getFilteredAccounts", null);
 __decorate([
-    (0, common_1.Get)('revenue/total'),
+    (0, common_1.Get)('revenue/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)('pricePerEntry')),
+    __param(2, (0, common_1.Query)('subscriptionPrice')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:returntype", Promise)
+], AccountController.prototype, "getAccountRevenue", null);
+__decorate([
+    (0, common_1.Get)('total/revenue'),
     __param(0, (0, common_1.Query)('pricePerEntry')),
     __param(1, (0, common_1.Query)('subscriptionPrice')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getRevenue", null);
-__decorate([
-    (0, common_1.Get)('frequency/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], AccountController.prototype, "getFrequency", null);
 __decorate([
     (0, common_1.Get)('suspension/status/:id'),
     __param(0, (0, common_1.Param)('id')),
@@ -204,19 +200,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getRiskReport", null);
 __decorate([
-    (0, common_1.Get)('sex/metrics'),
+    (0, common_1.Get)('sex/data'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getSexMetrics", null);
 __decorate([
-    (0, common_1.Get)('age/metrics'),
+    (0, common_1.Get)('age/data'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getAgeMetrics", null);
 __decorate([
-    (0, common_1.Get)('month/new/customers'),
+    (0, common_1.Get)('month/customers/data'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -233,6 +229,20 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AccountController.prototype, "getActiveAccounts", null);
+__decorate([
+    (0, common_1.Get)('entries/after/payment/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AccountController.prototype, "getEntriesAfterLastPayment", null);
+__decorate([
+    (0, common_1.Get)('frequency/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AccountController.prototype, "getFreqency", null);
 exports.AccountController = AccountController = __decorate([
     (0, common_1.Controller)('api/accounts'),
     __metadata("design:paramtypes", [account_service_1.AccountService])

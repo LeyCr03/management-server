@@ -32,6 +32,9 @@ let EntriesController = class EntriesController {
     async getMonthlyEntries() {
         return this.entryService.getAllMonthlyEntries();
     }
+    async geAllEntries() {
+        return this.entryService.getAllEntries();
+    }
 };
 exports.EntriesController = EntriesController;
 __decorate([
@@ -49,17 +52,23 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)('entries'),
+    (0, common_1.Get)('tree/month'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "getEntries", null);
 __decorate([
-    (0, common_1.Get)('monthly/entries'),
+    (0, common_1.Get)('month/data'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], EntriesController.prototype, "getMonthlyEntries", null);
+__decorate([
+    (0, common_1.Get)('all'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], EntriesController.prototype, "geAllEntries", null);
 exports.EntriesController = EntriesController = __decorate([
     (0, common_1.Controller)('api/entries'),
     __metadata("design:paramtypes", [entry_service_1.EntryService])

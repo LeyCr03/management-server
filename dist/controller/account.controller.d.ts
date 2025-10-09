@@ -14,11 +14,13 @@ export declare class AccountController {
     create(createAccountDto: CreateAccountDto): Promise<Account>;
     getAccountById(id: string): Promise<Account | null>;
     getAccountByName(name: string): Promise<Account | null>;
-    getAccountRevenue(id: string, pricePerEntry: number, subscriptionPrice: number): Promise<number>;
     getAccountLastPayment(id: string): Promise<Date>;
     getAccountLastEntry(id: string): Promise<Date>;
-    getAccountEntiesAfterLastPayment(id: string): Promise<import("../entity/entry.entity").Entry[]>;
-    getAllAccounts(): Promise<{
+    getAllAccountsByPayment(): Promise<{
+        accounts: Account[];
+        total: number;
+    }>;
+    getAllAccountsByEntry(): Promise<{
         accounts: Account[];
         total: number;
     }>;
@@ -30,8 +32,8 @@ export declare class AccountController {
         accounts: Account[];
         total: number;
     }>;
+    getAccountRevenue(id: string, pricePerEntry: number, subscriptionPrice: number): Promise<number>;
     getRevenue(pricePerEntry: number, subscriptionPrice: number): Promise<number>;
-    getFrequency(id: string): Promise<number>;
     getSuspension(id: string): Promise<{
         suspensionRisk: boolean;
         daysSinceLastPayment: number | null;
@@ -53,4 +55,6 @@ export declare class AccountController {
     }[]>;
     getNewCustomers(): Promise<number>;
     getActiveAccounts(): Promise<number>;
+    getEntriesAfterLastPayment(id: string): Promise<import("../entity/entry.entity").Entry[]>;
+    getFreqency(id: string): Promise<number>;
 }

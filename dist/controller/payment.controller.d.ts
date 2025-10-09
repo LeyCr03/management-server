@@ -7,9 +7,9 @@ export declare class PaymentController {
     }>;
     create(id: string, registered_at: Date): Promise<import("../entity/payment.entity").Payment>;
     getPayments(): Promise<number>;
-    getMonthlyPayments(): Promise<{
+    getMonthlyPayments(subscriptionPrice: number): Promise<{
         date: Date;
-        payments: number;
+        revenue: number;
     }[]>;
     geAllPayments(): Promise<import("../entity/payment.entity").Payment[]>;
 }

@@ -15,4 +15,6 @@ export declare class EntryService {
         entries: number;
     }[]>;
     getAllEntriesSinceLastMonths(): Promise<number>;
+    getAllEntries(): Promise<Entry[]>;
+    getLastEntry(accountId: string): Promise<Date>;
 }

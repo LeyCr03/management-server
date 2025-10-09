@@ -87,6 +87,21 @@ let EntryService = class EntryService {
         });
         return entries;
     }
+    async getAllEntries() {
+        const entries = await this.entryRepository.find();
+        return entries;
+    }
+    async getLastEntry(accountId) {
+        const lastEntry = await this.entryRepository
+            .createQueryBuilder('entry')
+            .where('entry.accountId = :accountId', { accountId })
+            .orderBy('entry.registered_at', 'DESC')
+            .getOne();
+        if (!lastEntry) {
+            throw new common_1.NotFoundException(`No entries registered for account with id ${accountId}`);
+        }
+        return lastEntry.registered_at;
+    }
 };
 exports.EntryService = EntryService;
 exports.EntryService = EntryService = __decorate([

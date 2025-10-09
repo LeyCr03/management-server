@@ -3,6 +3,7 @@ import { Between, MoreThanOrEqual, Repository } from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Account } from "src/entity/account.entity";
 import { Entry } from "src/entity/entry.entity";
+import { AccountService } from "./account.service";
 
 @Injectable()
 export class EntryService {
@@ -11,7 +12,9 @@ export class EntryService {
         private readonly entryRepository: Repository<Entry>,
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
+
     ) { }
+
 
     async createEntry(accountId: string): Promise<Entry> {
         const account = await this.accountRepository.findOne({ where: { id: accountId } })
@@ -94,4 +97,24 @@ export class EntryService {
 
         return entries;
     }
+
+    async getAllEntries(): Promise<Entry[]> {
+        const entries = await this.entryRepository.find();
+        return entries
+    }
+
+    async getLastEntry(accountId: string): Promise<Date> {
+        const lastEntry = await this.entryRepository
+            .createQueryBuilder('entry')
+            .where('entry.accountId = :accountId', { accountId })
+            .orderBy('entry.registered_at', 'DESC')
+            .getOne();
+
+        if (!lastEntry) {
+            throw new NotFoundException(`No entries registered for account with id ${accountId}`); // Alternative
+        }
+
+        return lastEntry.registered_at;
+    }
+
 }
